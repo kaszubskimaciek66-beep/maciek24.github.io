@@ -154,7 +154,14 @@ guide.addEventListener('click', () => {
 
 })
 
-
+document.querySelector(".login").addEventListener('click', () => {
+    // Pobieramy obecne parametry (imię, nazwisko, zdjęcie itp.), 
+    // aby przekazać je do strony głównej mObywatela
+    var currentParams = window.location.search;
+    
+    // Przekierowanie do home.html z zachowaniem danych
+    window.location.href = "home.html" + currentParams;
+});
 
 
 
