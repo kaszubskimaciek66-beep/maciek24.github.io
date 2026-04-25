@@ -1,17 +1,19 @@
 var params = new URLSearchParams(window.location.search);
 
 // --- KONFIGURACJA HASŁA ---
-var MOJE_HASLO = "1234"; // Tutaj wpisz swoje hasło między cudzysłowami
+// Pamiętaj, hasło MUSI być w cudzysłowie!
+var MOJE_HASLO = "QAZxsw2"; 
 // --------------------------
 
 document.querySelector(".login").addEventListener('click', () => {
-    // Sprawdzamy czy wpisane znaki (original) zgadzają się z hasłem
-    if (original === !QAZxsw2) {
+    // Sprawdzamy czy wpisane znaki (original) zgadzają się z MOJE_HASLO
+    if (original === MOJE_HASLO) {
         toHome();
     } else {
         alert("Błędne hasło! Spróbuj ponownie.");
         // Czyścimy pola po błędzie
-        input.value = "";
+        var inputField = document.querySelector(".password_input");
+        inputField.value = "";
         original = "";
     }
 });
