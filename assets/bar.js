@@ -1,12 +1,8 @@
-
 var params = new URLSearchParams(window.location.search);
 
 function sendTo(url) {
-    // Pobieramy parametry (dane dowodu), żeby nie zniknęły przy przełączaniu stron
-    var params = window.location.search;
-    
-    // Przekierowanie: np. klikasz 'services', idzie do 'services.html?imię=Jan...'
-    location.href = url + ".html" + params;
+    // Przekierowanie na GitHub Pages: plik.html?dane
+    location.href = url + ".html?" + params.toString();
 }
 
 document.querySelectorAll(".bottom_element_grid").forEach((element) => {
