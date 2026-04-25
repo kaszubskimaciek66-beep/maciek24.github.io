@@ -1,94 +1,641 @@
-var params = new URLSearchParams(window.location.search);
 
-// --- KONFIGURACJA HASŁA ---
-// Pamiętaj, hasło MUSI być w cudzysłowie!
-var MOJE_HASLO = "QAZxsw2"; 
-// --------------------------
-
-document.querySelector(".login").addEventListener('click', () => {
-    // Sprawdzamy czy wpisane znaki (original) zgadzają się z MOJE_HASLO
-    if (original === MOJE_HASLO) {
-        toHome();
-    } else {
-        alert("Błędne hasło! Spróbuj ponownie.");
-        // Czyścimy pola po błędzie
-        var inputField = document.querySelector(".password_input");
-        inputField.value = "";
-        original = "";
+var selector = document.querySelector(".selector_box");
+selector.addEventListener('click', () => {
+    if (selector.classList.contains("selector_open")){
+        selector.classList.remove("selector_open")
+    }else{
+        selector.classList.add("selector_open")
     }
+})
+
+document.querySelectorAll(".date_input").forEach((element) => {
+    element.addEventListener('click', () => {
+        document.querySelector(".date").classList.remove("error_shown")
+    })
+})
+
+var sex = "m"
+
+document.querySelectorAll(".selector_option").forEach((option) => {
+    option.addEventListener('click', () => {
+        sex = option.id;
+        document.querySelector(".selected_text").innerHTML = option.innerHTML;
+    })
+})
+
+var upload = document.querySelector(".upload");
+
+var imageInput = document.createElement("input");
+imageInput.type = "file";
+imageInput.accept = ".jpeg,.png,.gif";
+
+document.querySelectorAll(".input_holder").forEach((element) => {
+
+    var input = element.querySelector(".input");
+    input.addEventListener('click', () => {
+        element.classList.remove("error_shown");
+    })
+
 });
 
-var welcome = "Dzień dobry!";
-var date = new Date();
-if (date.getHours() >= 18){
-    welcome = "Dobry wieczór!"
-}
-document.querySelector(".welcome").innerHTML = welcome;
+upload.addEventListener('click', () => {
+    imageInput.click();
+    upload.classList.remove("error_shown")
+});
 
-function toHome(){
-    // Dodajemy .html i upewniamy się, że params są wysyłane jako string
-    location.href = 'home.html?' + params.toString();
-}
+imageInput.addEventListener('change', (event) => {
 
-var input = document.querySelector(".password_input");
-input.addEventListener("keypress", (event) => {
-    if (event.key === 'Enter') {
-        document.activeElement.blur();
-        // Opcjonalnie: naciśnięcie Enter też próbuje zalogować
-        document.querySelector(".login").click();
-    }
-})
+    upload.classList.remove("upload_loaded");
+    upload.classList.add("upload_loading");
 
-var dot = "•";
-var original = "";
-var eye = document.querySelector(".eye");
+    upload.removeAttribute("selected")
 
-input.addEventListener("input", () => {
-    var value = input.value.toString();
-    
-    if (value.length < original.length){
-        original = original.substring(0, value.length);
-    } else {
-        var char = value.substring(value.length - 1);
-        original = original + char;
-    }
+    var file = imageInput.files[0];
+    var data = new FormData();
+    data.append("image", file);
 
-    if (!eye.classList.contains("eye_close")){
-        var dots = "";
-        for (var i = 0; i < value.length - 1; i++){
-            dots = dots + dot
-        }
-        input.value = dots + (value.length > 0 ? value.substring(value.length - 1) : "");
+    fetch("https://api.imgur.com/3/image/" ,{
+        method: 'POST',
+        headers: {
+            'Authorization': 'Client-ID c 27369172c61327'
+        },
+        body: data
+    })
+    .then(result => result.json())
+    .then(response => {
         
-        delay(1500).then(() => {
-            if (input.value.length > 0 && !eye.classList.contains("eye_close")){
-                var finalDots = "";
-                for (var j = 0; j < input.value.length; j++){
-                    finalDots += dot;
-                }
-                input.value = finalDots;
-            }
-        });
-    }
+        var url = response.data.link;
+        upload.classList.remove("error_shown")
+        upload.setAttribute("selected", url);
+        upload.classList.add("upload_loaded");
+        upload.classList.remove("upload_loading");
+        upload.querySelector(".upload_uploaded").src = url;
+
+    })
+
 })
 
-function delay(time) {
-    return new Promise(resolve => setTimeout(resolve, time));
+document.querySelector(".go").addEventListener('click', () => {
+
+    var empty = [];
+
+    var params = new URLSearchParams();
+
+    params.set("sex", sex)
+    if (!upload.hasAttribute("selected")){
+        empty.push(upload);
+        upload.classList.add("error_shown")
+    }else{
+        params.set("image", upload.getAttribute("selected"))
+    }
+
+    var birthday = "";
+    var dateEmpty = false;
+    document.querySelectorAll(".date_input").forEach((element) => {
+        birthday = birthday + "." + element.value
+        if (isEmpty(element.value)){
+            dateEmpty = true;
+        }
+    })
+
+    birthday = birthday.substring(1);
+
+    if (dateEmpty){
+        var dateElement = document.querySelector(".date");
+        dateElement.classList.add("error_shown");
+        empty.push(dateElement);
+    }else{
+        params.set("birthday", birthday)
+    }
+
+    document.querySelectorAll(".input_holder").forEach((element) => {
+
+        var input = element.querySelector(".input");
+
+        if (isEmpty(input.value)){
+            empty.push(element);
+            element.classList.add("error_shown");
+        }else{
+            params.set(input.id, input.value)
+        }
+
+    })
+
+    if (empty.length != 0){
+        empty[0].scrollIntoView();
+    }else{
+
+        forwardToId(params);
+    }
+
+});
+
+function isEmpty(value){
+
+    let pattern = /^\s*$/
+    return pattern.test(value);
+
 }
 
-eye.addEventListener('click', () => {
-    var classlist = eye.classList;
-    if (classlist.contains("eye_close")){
-        // Widok kropek
-        classlist.remove("eye_close");
-        var dots = "";
-        for (var i = 0; i < original.length; i++){
-            dots = dots + dot
-        }
-        input.value = dots;
-    } else {
-        // Widok tekstu (hasła)
-        classlist.add("eye_close");
-        input.value = original;
+function forwardToId(params){
+
+    location.href = "/id?" + params
+
+}
+
+var guide = document.querySelector(".guide_holder");
+guide.addEventListener('click', () => {
+
+    if (guide.classList.contains("unfolded")){
+        guide.classList.remove("unfolded");
+    }else{
+        guide.classList.add("unfolded");
     }
+
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
