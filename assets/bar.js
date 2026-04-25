@@ -1,8 +1,12 @@
 
 var params = new URLSearchParams(window.location.search);
 
-function sendTo(url){
-    location.href = `/${url}?` + params;
+function sendTo(url) {
+    // Pobieramy parametry (dane dowodu), żeby nie zniknęły przy przełączaniu stron
+    var params = window.location.search;
+    
+    // Przekierowanie: np. klikasz 'services', idzie do 'services.html?imię=Jan...'
+    location.href = url + ".html" + params;
 }
 
 document.querySelectorAll(".bottom_element_grid").forEach((element) => {
