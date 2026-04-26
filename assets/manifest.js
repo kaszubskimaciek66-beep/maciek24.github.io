@@ -3,13 +3,13 @@ let webManifest = {
     "short_name": "mObywatel",
     "icons": [
         {
-            "src": "https://i.imgur.com/39w62qj.png",
+            "src": "https://imgur.com/a/NtZWDW6",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
-            "src": "https://i.imgur.com/39w62qj.png",
+            "src": "https://imgur.com/a/NtZWDW6",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
